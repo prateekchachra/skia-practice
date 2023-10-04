@@ -9,6 +9,7 @@ import { frag } from "../components";
 // https://www.shadertoy.com/view/4lXXWn
 const source = frag`
 uniform shader iImage1;
+uniform shader mask;
 uniform float2 iResolution;
 
 vec3 draw(vec2 uv) {
@@ -27,7 +28,7 @@ const float repeats = 60;
 vec4 main(vec2 fragCoord)
 {
   vec2 uv = (fragCoord / iResolution);
-  float bluramount = 0.1;
+  float bluramount = mix(0, 0.1, mask.eval(fragCoord).a);
   vec3 blurred_image = vec3(0.);
   for (float i = 0.; i < repeats; i++) {
     vec2 q = vec2(
@@ -48,10 +49,11 @@ vec4 main(vec2 fragCoord)
 
 interface BlurGradientProps {
   children: ReactNode | ReactNode[];
+  mask: ReactNode; 
 }
 
 const { width, height } = Dimensions.get("window");
 
-export const BlurGradient = ({ children }: BlurGradientProps) => {
-  return <Fill>{children}</Fill>;
+export const BlurGradient = ({ children, mask}: BlurGradientProps) => {
+  return <Fill><Shader source={source} uniforms={{iResolution: [width, height]}}>{children}{mask}</Shader></Fill>;
 };
